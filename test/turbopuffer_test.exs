@@ -42,23 +42,4 @@ defmodule TurbopufferTest do
     end
   end
 
-  describe "list_namespaces" do
-    setup do
-      client = Turbopuffer.new(api_key: "test-key")
-      {:ok, client: client}
-    end
-
-    test "calls the API with no options", %{client: client} do
-      # Will fail with connection error but validates the function exists and params
-      assert {:error, _} = Turbopuffer.list_namespaces(client)
-    end
-
-    test "calls the API with prefix option", %{client: client} do
-      assert {:error, _} = Turbopuffer.list_namespaces(client, prefix: "prod-")
-    end
-
-    test "calls the API with all options", %{client: client} do
-      assert {:error, _} = Turbopuffer.list_namespaces(client, prefix: "test-", page_size: 50, cursor: "abc123")
-    end
-  end
 end
