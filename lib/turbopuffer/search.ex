@@ -41,7 +41,7 @@ defmodule Turbopuffer.Search do
     base_body = %{
       "rank_by" => [attribute, "BM25", query],
       "top_k" => Keyword.get(opts, :top_k, 10),
-      "include_attributes" => Keyword.get(opts, :include_attributes, true)
+      "include_attributes" => normalize_include_attributes(Keyword.get(opts, :include_attributes, true))
     }
 
     case Keyword.get(opts, :filters) do
@@ -190,7 +190,7 @@ defmodule Turbopuffer.Search do
     base_query = %{
       "rank_by" => format_rank_by(rank_by),
       "top_k" => Map.get(query, :top_k, 10),
-      "include_attributes" => Map.get(query, :include_attributes, include_attributes)
+      "include_attributes" => normalize_include_attributes(Map.get(query, :include_attributes, include_attributes))
     }
 
     case Map.get(query, :filters) do
@@ -213,6 +213,15 @@ defmodule Turbopuffer.Search do
   end
 
   defp format_rank_by(rank_by), do: rank_by
+
+  defp normalize_include_attributes(:all), do: true
+  defp normalize_include_attributes(value) when is_boolean(value), do: value
+  defp normalize_include_attributes(value) when is_list(value), do: value
+  defp normalize_include_attributes(value) do
+    raise ArgumentError,
+      "invalid value for :include_attributes: #{inspect(value)}. " <>
+      "Expected a boolean, :all, or a list of attribute name strings"
+  end
 
   # Convert map filters to tuple format expected by API
   defp format_filters(nil), do: nil
