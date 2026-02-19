@@ -60,4 +60,41 @@ defmodule Turbopuffer.VectorTest do
       assert {:error, _} = result
     end
   end
+
+  describe "include_attributes normalization" do
+    test "accepts :all as alias for true", %{namespace: namespace} do
+      # This will fail with connection error but validates :all doesn't raise
+      result = Vector.query(namespace,
+        vector: [0.1, 0.2, 0.3],
+        top_k: 10,
+        include_attributes: :all
+      )
+      assert {:error, _} = result
+    end
+
+    test "accepts boolean true", %{namespace: namespace} do
+      result = Vector.query(namespace,
+        vector: [0.1, 0.2, 0.3],
+        include_attributes: true
+      )
+      assert {:error, _} = result
+    end
+
+    test "accepts list of attribute names", %{namespace: namespace} do
+      result = Vector.query(namespace,
+        vector: [0.1, 0.2, 0.3],
+        include_attributes: ["text", "category"]
+      )
+      assert {:error, _} = result
+    end
+
+    test "raises ArgumentError for invalid values", %{namespace: namespace} do
+      assert_raise ArgumentError, ~r/invalid value for :include_attributes/, fn ->
+        Vector.query(namespace,
+          vector: [0.1, 0.2, 0.3],
+          include_attributes: :invalid
+        )
+      end
+    end
+  end
 end

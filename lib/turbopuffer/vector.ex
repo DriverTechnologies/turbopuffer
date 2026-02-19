@@ -207,6 +207,9 @@ defmodule Turbopuffer.Vector do
     include_attributes = Keyword.get(opts, :include_attributes, true)
     include_vectors = Keyword.get(opts, :include_vectors, false)
 
+    # Normalize :all to true
+    include_attributes = normalize_include_attributes(include_attributes)
+
     case {include_attributes, include_vectors} do
       {true, true} -> ["vector"]
       {true, false} -> true
@@ -214,6 +217,15 @@ defmodule Turbopuffer.Vector do
       {attrs, false} -> attrs
       _ -> include_attributes
     end
+  end
+
+  defp normalize_include_attributes(:all), do: true
+  defp normalize_include_attributes(value) when is_boolean(value), do: value
+  defp normalize_include_attributes(value) when is_list(value), do: value
+  defp normalize_include_attributes(value) do
+    raise ArgumentError,
+      "invalid value for :include_attributes: #{inspect(value)}. " <>
+      "Expected a boolean, :all, or a list of attribute name strings"
   end
 
   # Pattern match on query options
