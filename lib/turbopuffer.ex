@@ -286,4 +286,26 @@ defmodule Turbopuffer do
   """
   @spec delete_namespace(Namespace.t()) :: {:ok, success_response()} | {:error, term()}
   defdelegate delete_namespace(namespace), to: Namespace, as: :delete
+
+  @type list_namespaces_opts :: [
+          {:prefix, String.t()}
+          | {:page_size, pos_integer()}
+          | {:cursor, String.t()}
+        ]
+
+  @doc """
+  Lists namespaces.
+
+  ## Options
+    * `:prefix` - Filter namespaces by prefix
+    * `:page_size` - Number of results per page
+    * `:cursor` - Cursor for pagination
+
+  ## Examples
+
+      {:ok, result} = Turbopuffer.list_namespaces(client)
+      {:ok, result} = Turbopuffer.list_namespaces(client, prefix: "prod-", page_size: 100)
+  """
+  @spec list_namespaces(Client.t(), list_namespaces_opts()) :: {:ok, map()} | {:error, term()}
+  defdelegate list_namespaces(client, opts \\ []), to: Namespace, as: :list
 end
