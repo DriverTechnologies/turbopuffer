@@ -193,11 +193,21 @@ defmodule Turbopuffer.Vector do
 
   # Build query body from options using pattern matching
   defp build_query_body(opts, vector) do
+    include_attributes = Keyword.get(opts, :include_attributes)
+    exclude_attributes = Keyword.get(opts, :exclude_attributes)
+
     base_body = %{
       "rank_by" => ["vector", "ANN", vector],
-      "top_k" => Keyword.get(opts, :top_k, 10),
-      "include_attributes" => process_include_attributes(opts)
+      "top_k" => Keyword.get(opts, :top_k, 10)
     }
+
+    # Omit include_attributes when exclude_attributes is provided and no inclusion was requested
+    base_body =
+      if exclude_attributes not in [nil, []] and include_attributes in [false, []] do
+        base_body
+      else
+        Map.put(base_body, "include_attributes", process_include_attributes(opts))
+      end
 
     opts
     |> Enum.reduce(base_body, &add_query_option/2)
