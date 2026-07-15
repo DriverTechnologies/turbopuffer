@@ -5,6 +5,8 @@ defmodule Turbopuffer.Vector do
 
   alias Turbopuffer.{Client, Namespace, Result}
 
+  @request_opts [:receive_timeout, :pool_timeout, :request_timeout]
+
   @doc """
   Writes vectors to a namespace (upserts, patches, and/or deletes).
 
@@ -153,6 +155,7 @@ defmodule Turbopuffer.Vector do
     * `:group_by` - Attributes to group aggregations by
     * `:vector_encoding` - Vector encoding format (:float or :base64)
     * `:consistency` - Read consistency (:strong or :eventual)
+    * `:receive_timeout`, `:pool_timeout`, `:request_timeout` - Forwarded to Finch to bound per-query latency
 
   ## Examples
 
@@ -188,7 +191,7 @@ defmodule Turbopuffer.Vector do
       |> build_query_body(vector)
 
     namespace.client
-    |> Client.post(path, body)
+    |> Client.post(path, body, Keyword.take(opts, @request_opts))
     |> handle_query_response()
   end
 

@@ -182,5 +182,33 @@ defmodule Turbopuffer.VectorTest do
       assert body["include_attributes"] == ["text"]
       assert body["exclude_attributes"] == ["vector"]
     end
+
+    test "does not leak request opts into the query body", %{namespace: namespace, bypass: bypass} do
+      body = query_and_capture_body(bypass, namespace,
+        vector: [0.1, 0.2],
+        receive_timeout: 5_000
+      )
+
+      refute Map.has_key?(body, "receive_timeout")
+    end
+  end
+
+  describe "request options" do
+    test "forwards receive_timeout to Finch" do
+      {:ok, listen} = :gen_tcp.listen(0, [:binary, active: false, reuseaddr: true])
+      {:ok, port} = :inet.port(listen)
+
+      # Accept the connection but never respond so receive_timeout fires.
+      spawn_link(fn ->
+        {:ok, _socket} = :gen_tcp.accept(listen)
+        Process.sleep(:infinity)
+      end)
+
+      client = Client.new(api_key: "test-key", base_url: "http://localhost:#{port}")
+      namespace = Namespace.new(client, "test-ns")
+
+      assert {:error, %Mint.TransportError{reason: :timeout}} =
+               Vector.query(namespace, vector: [0.1, 0.2], receive_timeout: 50)
+    end
   end
 end
